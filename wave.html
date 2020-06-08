@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave</title>
+</head>
+
+<body>
+    <canvas width="500" height="500"></canvas>
+    <script>
+        let canvas = document.getElementsByTagName("canvas")[0];
+        let ctx = canvas.getContext("2d");
+        let img = new Image();
+        let waveLength = 15;
+        let amp = 15;
+        img.onload = function() {
+            ctx.rect(0, 0, img.width, img.height);
+            ctx.clip();
+            ctx.drawImage(img, 0, 0);
+            let i = 0;
+            setInterval(function() {
+                for (let y = 0; y < img.height; y++) {
+                    let dx = Math.floor(Math.sin((y + i) / waveLength) * amp);
+                    ctx.drawImage(img, 0, y, 300, 1, dx, y, 300, 1);
+                }
+                i++;
+            }, 33);
+        };
+        img.src = "image.jpg";
+    </script>
+</body>
+
+</html>
