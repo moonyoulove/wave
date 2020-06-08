@@ -19,7 +19,7 @@
             let ih = img.height;
             let waveLength = ih / 16;
             let amp = iw / 64;
-            let speed = amp / 14;
+            let speed = iw / 900;
             let max = waveLength / speed * Math.PI * 2;
             let i = 0;
             ctx.rect(0, 0, iw, ih);
@@ -36,7 +36,7 @@
                 }
             }, 33);
         };
-        img.src = "base.jpg";
+        img.src = "image.jpg";
     </script>
 </body>
 
