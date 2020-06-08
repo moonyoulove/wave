@@ -8,27 +8,35 @@
 </head>
 
 <body>
-    <canvas width="500" height="500"></canvas>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <div id="fps"></div>
     <script>
-        let canvas = document.getElementsByTagName("canvas")[0];
+        let canvas = document.getElementById("canvas");
         let ctx = canvas.getContext("2d");
         let img = new Image();
-        let waveLength = 15;
-        let amp = 15;
         img.onload = function() {
-            ctx.rect(0, 0, img.width, img.height);
+            let iw = img.width;
+            let ih = img.height;
+            let waveLength = ih / 16;
+            let amp = iw / 64;
+            let speed = amp / 14;
+            let max = waveLength / speed * Math.PI * 2;
+            let i = 0;
+            ctx.rect(0, 0, iw, ih);
             ctx.clip();
             ctx.drawImage(img, 0, 0);
-            let i = 0;
             setInterval(function() {
-                for (let y = 0; y < img.height; y++) {
-                    let dx = Math.floor(Math.sin((y + i) / waveLength) * amp);
-                    ctx.drawImage(img, 0, y, 300, 1, dx, y, 300, 1);
+                for (let y = 0; y < ih; y++) {
+                    let dx = Math.floor(Math.sin((y + i * speed) / waveLength) * amp);
+                    ctx.drawImage(img, 0, y, iw, 1, dx, y, iw, 1);
                 }
                 i++;
+                if (i >= max) {
+                    i = 0;
+                }
             }, 33);
         };
-        img.src = "image.jpg";
+        img.src = "base.jpg";
     </script>
 </body>
 
