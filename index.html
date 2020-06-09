@@ -28,6 +28,7 @@
         <div><label>波長：</label><input id="wavelength" type="number" value="15"></div>
         <div><label>震幅：</label><input id="amp" type="number" value="5"></div>
         <div><label>速度：</label><input id="speed" type="number" value="0.5"></div>
+        <div><label>模式：</label><input id="move" name="mode" type="radio" checked><label>位移</label><input id="scale" name="mode" type="radio"><label>縮放</label></div>
         <div><label>圖片：</label><input id="image" type="file" accept="image/*"></div>
         <div><button id="apply">套用</button></div>
     </div>
@@ -36,12 +37,14 @@
         let ipt_waveLength = document.getElementById("wavelength");
         let ipt_amp = document.getElementById("amp");
         let ipt_speed = document.getElementById("speed");
+        let ipt_scale = document.getElementById("scale");
         let ipt_image = document.getElementById("image");
         let btn_apply = document.getElementById("apply");
         let reader = new FileReader();
         let interval = -1;
         let ctx = canvas.getContext("2d");
         let img = new Image();
+        let a = true;
         img.src = "default.jpg";
         img.onload = function() {
             let iw = img.width;
@@ -50,6 +53,7 @@
             let amp = ipt_amp.value;
             let speed = ipt_speed.value;
             let max = waveLength / speed * Math.PI * 2;
+            let scale = ipt_scale.checked;
             let i = 0;
             canvas.width = iw;
             canvas.height = ih;
@@ -60,9 +64,16 @@
             ctx.clip();
             clearInterval(interval);
             interval = setInterval(function() {
-                for (let y = 0; y < ih; y++) {
-                    let dx = Math.floor(Math.sin((y + i * speed) / waveLength) * amp);
-                    ctx.drawImage(img, 0, y, iw, 1, dx, y, iw, 1);
+                if (scale) {
+                    for (let y = 0; y < ih; y++) {
+                        let dx = Math.floor(Math.sin((y + i * speed) / waveLength) * amp);
+                        ctx.drawImage(img, 0, y, iw, 1, -dx / 2, y, iw + dx, 1);
+                    }
+                } else {
+                    for (let y = 0; y < ih; y++) {
+                        let dx = Math.floor(Math.sin((y + i * speed) / waveLength) * amp);
+                        ctx.drawImage(img, 0, y, iw, 1, dx, y, iw, 1);
+                    }
                 }
                 i++;
                 if (i >= max) {
