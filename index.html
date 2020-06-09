@@ -25,11 +25,12 @@
 <body>
     <canvas id="canvas" width="300" height="200"></canvas>
     <div id="option">
-        <div><label>波長：</label><input id="wavelength" type="number" value="15"></div>
-        <div><label>震幅：</label><input id="amp" type="number" value="5"></div>
-        <div><label>速度：</label><input id="speed" type="number" value="0.5"></div>
-        <div><label>模式：</label><input id="move" name="mode" type="radio" checked><label>位移</label><input id="scale" name="mode" type="radio"><label>縮放</label></div>
-        <div><label>圖片：</label><input id="image" type="file" accept="image/*"></div>
+        <div><label>波長：<input id="wavelength" type="number" value="15"></label></div>
+        <div><label>震幅：<input id="amp" type="number" value="5"></label></div>
+        <div><label>速度：<input id="speed" type="number" value="0.5"></label></div>
+        <div><label>像素：<input id="pixel" type="number" value="1"></label></div>
+        <div><label>模式：</label><label><input id="move" name="mode" type="radio" checked>位移</label><label><input id="scale" name="mode" type="radio">縮放</label></div>
+        <div><label>圖片：<input id="image" type="file" accept="image/*"></label></div>
         <div><button id="apply">套用</button></div>
     </div>
     <script>
@@ -39,22 +40,43 @@
         let ipt_speed = document.getElementById("speed");
         let ipt_scale = document.getElementById("scale");
         let ipt_image = document.getElementById("image");
+        let ipt_pixel = document.getElementById("pixel");
         let btn_apply = document.getElementById("apply");
         let reader = new FileReader();
-        let interval = -1;
+        let requestId = 0;
         let ctx = canvas.getContext("2d");
         let img = new Image();
-        let a = true;
+        let iw, ih, waveLength, amp, speed, max, scale, pixel, i;
+        let start = performance.now();
+        let wave = function(timestamp) {
+            if (timestamp - start < 33) {
+                return;
+            }
+            for (let y = 0; y < ih; y += pixel) {
+                let dx = Math.floor(Math.sin((y + i * speed) / waveLength) * amp);
+                if (scale) {
+                    ctx.drawImage(img, 0, y, iw, pixel, -dx / 2, y, iw + dx, pixel);
+                } else {
+                    ctx.drawImage(img, 0, y, iw, pixel, dx, y, iw, pixel);
+                }
+            }
+            i++;
+            if (i >= max) {
+                i = 0;
+            }
+            requestId = requestAnimationFrame(wave);
+        }
         img.src = "default.jpg";
         img.onload = function() {
-            let iw = img.width;
-            let ih = img.height;
-            let waveLength = ipt_waveLength.value;
-            let amp = ipt_amp.value;
-            let speed = ipt_speed.value;
-            let max = waveLength / speed * Math.PI * 2;
-            let scale = ipt_scale.checked;
-            let i = 0;
+            iw = img.width;
+            ih = img.height;
+            waveLength = Number(ipt_waveLength.value);
+            amp = Number(ipt_amp.value);
+            speed = Number(ipt_speed.value);
+            max = waveLength / speed * Math.PI * 2;
+            scale = ipt_scale.checked;
+            pixel = Number(ipt_pixel.value);
+            i = 0;
             canvas.width = iw;
             canvas.height = ih;
             ctx.restore();
@@ -62,24 +84,8 @@
             ctx.drawImage(img, 0, 0);
             ctx.rect(0, 0, iw, ih);
             ctx.clip();
-            clearInterval(interval);
-            interval = setInterval(function() {
-                if (scale) {
-                    for (let y = 0; y < ih; y++) {
-                        let dx = Math.floor(Math.sin((y + i * speed) / waveLength) * amp);
-                        ctx.drawImage(img, 0, y, iw, 1, -dx / 2, y, iw + dx, 1);
-                    }
-                } else {
-                    for (let y = 0; y < ih; y++) {
-                        let dx = Math.floor(Math.sin((y + i * speed) / waveLength) * amp);
-                        ctx.drawImage(img, 0, y, iw, 1, dx, y, iw, 1);
-                    }
-                }
-                i++;
-                if (i >= max) {
-                    i = 0;
-                }
-            }, 33);
+            cancelAnimationFrame(requestId);
+            requestId = requestAnimationFrame(wave);
         };
         apply.onclick = function() {
             if (ipt_image.files.length > 0) {
