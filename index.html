@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave</title>
+    <style>
+        #canvas {
+            float: left;
+            margin-right: 8px;
+        }
+
+        #option {
+            float: left;
+        }
+
+        #apply {
+            margin-top: 4px;
+            margin-left: 170px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="300" height="200"></canvas>
+    <div id="option">
+        <div><label>波長：</label><input id="wavelength" type="number" value="15"></div>
+        <div><label>震幅：</label><input id="amp" type="number" value="5"></div>
+        <div><label>速度：</label><input id="speed" type="number" value="0.5"></div>
+        <div><label>圖片：</label><input id="image" type="file" accept="image/*"></div>
+        <div><button id="apply">套用</button></div>
+    </div>
+    <script>
+        let canvas = document.getElementById("canvas");
+        let ipt_waveLength = document.getElementById("wavelength");
+        let ipt_amp = document.getElementById("amp");
+        let ipt_speed = document.getElementById("speed");
+        let ipt_image = document.getElementById("image");
+        let btn_apply = document.getElementById("apply");
+        let reader = new FileReader();
+        let interval = -1;
+        let ctx = canvas.getContext("2d");
+        let img = new Image();
+        img.src = "default.jpg";
+        img.onload = function() {
+            let iw = img.width;
+            let ih = img.height;
+            let waveLength = ipt_waveLength.value;
+            let amp = ipt_amp.value;
+            let speed = ipt_speed.value;
+            let max = waveLength / speed * Math.PI * 2;
+            let i = 0;
+            canvas.width = iw;
+            canvas.height = ih;
+            ctx.restore();
+            ctx.save();
+            ctx.drawImage(img, 0, 0);
+            ctx.rect(0, 0, iw, ih);
+            ctx.clip();
+            clearInterval(interval);
+            interval = setInterval(function() {
+                for (let y = 0; y < ih; y++) {
+                    let dx = Math.floor(Math.sin((y + i * speed) / waveLength) * amp);
+                    ctx.drawImage(img, 0, y, iw, 1, dx, y, iw, 1);
+                }
+                i++;
+                if (i >= max) {
+                    i = 0;
+                }
+            }, 33);
+        };
+        apply.onclick = function() {
+            if (ipt_image.files.length > 0) {
+                reader.readAsDataURL(ipt_image.files[0]);
+            } else {
+                img.onload();
+            }
+        }
+        reader.onload = function() {
+            if (img.src !== reader.result) {
+                img.src = reader.result;
+            } else {
+                img.onload();
+            }
+        }
+    </script>
+</body>
+
+</html>
